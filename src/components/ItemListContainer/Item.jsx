@@ -1,15 +1,16 @@
-// src/components/ItemListContainer/Item.jsx
-import React from "react";
+import { Link } from "react-router-dom";
 
-const Item = ({ product }) => {
+function Item({ product }) {
   return (
     <div className="item-card">
       <img src={product.image} alt={product.name} />
       <h3>{product.name}</h3>
-      <p className="price">${product.price}</p>
-      <button>Agregar al carrito</button>
+      <p>${product.price}</p>
+      <Link to={`/item/${product.id}`}>
+        <button>Ver detalle</button>
+      </Link>
     </div>
   );
-};
+}
 
 export default Item;

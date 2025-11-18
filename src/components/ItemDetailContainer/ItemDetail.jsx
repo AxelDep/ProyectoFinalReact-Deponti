@@ -1,25 +1,33 @@
-import { useState, useContext } from "react";
+import { useContext, useState } from "react";
+import { Link } from "react-router-dom";
 import { CartContext } from "../../context/CartContext";
-import ItemCount from "./ItemCount"; // ruta relativa
+import ItemCount from "./ItemCount";
 
 function ItemDetail({ product }) {
   const { addItem } = useContext(CartContext);
   const [added, setAdded] = useState(false);
 
-  const handleAddToCart = (quantity) => {
-    addItem({ ...product }, quantity);
+  const handleAdd = (quantity) => {
+    addItem(product, quantity);
     setAdded(true);
   };
 
   return (
-    <div className="item-detail">
-      <img src={product.image} alt={product.name} style={{ width: "100%", maxWidth: "300px", objectFit: "contain" }} />
+    <div style={{ textAlign: "center", margin: "2rem" }}>
+      <img
+        src={product.image}
+        alt={product.name}
+        style={{ width: "300px", height: "300px", objectFit: "contain" }}
+      />
       <h2>{product.name}</h2>
-      <p>💲{product.price}</p>
+      <p>${product.price}</p>
+
       {!added ? (
-        <ItemCount stock={product.stock} initial={1} onAdd={handleAddToCart} />
+        <ItemCount stock={product.stock} initial={1} onAdd={handleAdd} />
       ) : (
-        <p style={{ color: "#00ADB5", marginTop: "1rem" }}>Producto agregado al carrito ✅</p>
+        <Link to="/cart">
+          <button>Ir al carrito</button>
+        </Link>
       )}
     </div>
   );

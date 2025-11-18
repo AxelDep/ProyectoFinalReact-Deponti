@@ -1,21 +1,27 @@
 // src/components/Checkout/CheckoutForm.jsx
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { CartContext } from "../../context/CartContext";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../../firebase/config";
 
-const CheckoutForm = () => {
+function CheckoutForm() {
   const { cart, totalPrice, clearCart } = useContext(CartContext);
-  const [buyer, setBuyer] = useState({ name: "", email: "", phone: "" });
+
+  const [buyer, setBuyer] = useState({
+    name: "",
+    email: "",
+    phone: ""
+  });
+
   const [orderId, setOrderId] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleChange = (e) => {
-    setBuyer({ ...buyer, [e.target.name]: e.target.value });
+    setBuyer({
+      ...buyer,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (cart.length === 0) {
@@ -23,32 +29,24 @@ const CheckoutForm = () => {
       return;
     }
 
-    setLoading(true);
     setError(null);
 
     const order = {
+      id: Date.now().toString(), // ID único simple
       buyer,
-      items: cart.map(({ id, name, price, quantity }) => ({
-        id, name, price, quantity
-      })),
+      items: cart.map(({ id, name, price, quantity }) => ({ id, name, price, quantity })),
       total: totalPrice(),
-      date: serverTimestamp()
+      date: new Date().toISOString()
     };
 
-    try {
-      const ordersRef = collection(db, "orders");
-      const docRef = await addDoc(ordersRef, order);
-      setOrderId(docRef.id);
-      clearCart();
-    } catch (err) {
-      console.error("Error creando la orden:", err);
-      setError("Ocurrió un error al generar la orden.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Guardar en LocalStorage
+    const orders = JSON.parse(localStorage.getItem("orders")) || [];
+    orders.push(order);
+    localStorage.setItem("orders", JSON.stringify(orders));
 
-  if (loading) return <p>Generando orden...</p>;
+    setOrderId(order.id);
+    clearCart();
+  };
 
   if (orderId) {
     return (
@@ -62,8 +60,13 @@ const CheckoutForm = () => {
   return (
     <div style={{ maxWidth: 480, margin: "2rem auto", textAlign: "center" }}>
       <h2>Checkout</h2>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSubmit} style={{ display: "grid", gap: "0.8rem", marginTop: "1rem" }}>
+
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "grid", gap: "0.8rem", marginTop: "1rem" }}
+      >
         <input
           type="text"
           name="name"
@@ -92,6 +95,6 @@ const CheckoutForm = () => {
       </form>
     </div>
   );
-};
+}
 
 export default CheckoutForm;
