@@ -1,53 +1,35 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { CartContext } from "../../context/CartContext";
+import CheckoutForm from "../Checkout/CheckoutForm";
 
-function Cart() {
-  const { cart, totalPrice, clearCart } = useContext(CartContext);
+const Cart = () => {
+  const { cart, totalPrice, removeItem, clearCart } = useContext(CartContext);
+  const [checkout, setCheckout] = useState(false);
 
-  const handleCheckout = () => {
-    if (cart.length === 0) {
-      alert("El carrito está vacío.");
-      return;
-    }
+  if (checkout) return <CheckoutForm />;
 
-    // Creamos la orden
-    const order = {
-      id: Date.now(), // ID único usando timestamp
-      date: new Date().toLocaleString(),
-      items: cart,
-      total: totalPrice,
-    };
-
-    // Guardamos en localStorage
-    const orders = JSON.parse(localStorage.getItem("orders")) || [];
-    orders.push(order);
-    localStorage.setItem("orders", JSON.stringify(orders));
-
-    alert(`Compra realizada con éxito. Total: $${totalPrice}`);
-
-    // Limpiamos carrito
-    clearCart();
-  };
-
-  if (cart.length === 0) return <p>El carrito está vacío.</p>;
+  if (!cart.length)
+    return <p style={{ textAlign: "center" }}>Tu carrito está vacío</p>;
 
   return (
-    <div style={{ maxWidth: 600, margin: "2rem auto", textAlign: "center" }}>
-      <h2>Mi Carrito</h2>
+    <div style={{ maxWidth: "600px", margin: "2rem auto" }}>
       {cart.map(item => (
-        <div key={item.id} style={{ borderBottom: "1px solid #ccc", padding: "10px" }}>
-          <p>{item.name} - {item.quantity} x ${item.price}</p>
+        <div key={item.id} style={{ display: "flex", marginBottom: "1rem" }}>
+          <img src={item.image} alt={item.name} style={{ width: "80px", marginRight: "1rem" }} />
+          <div>
+            <h4>{item.name}</h4>
+            <p>{item.quantity} x ${item.price}</p>
+            <button onClick={() => removeItem(item.id)}>Eliminar</button>
+          </div>
         </div>
       ))}
-      <h3>Total: ${totalPrice}</h3>
-      <button 
-        onClick={handleCheckout} 
-        style={{ marginTop: "1rem", padding: "10px 20px", background: "#00ADB5", color: "white", border: "none", borderRadius: "8px", cursor: "pointer" }}
-      >
-        Finalizar Compra
+      <h3>Total: ${totalPrice()}</h3>
+      <button onClick={() => setCheckout(true)}>Finalizar Compra</button>
+      <button onClick={clearCart} style={{ marginLeft: "1rem" }}>
+        Vaciar Carrito
       </button>
     </div>
   );
-}
+};
 
 export default Cart;
